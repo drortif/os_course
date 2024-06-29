@@ -2,6 +2,7 @@ built ins
     pwd
         errors
             done
+            do? max path size
         tests
             trivial
     
@@ -19,4 +20,8 @@ built ins
         errors
             done
         
+
+
+external commands
+    
     

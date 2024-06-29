@@ -2,15 +2,6 @@
 //*********************************************************************************************
 #include "commands.h"
 
-#include <sys/types.h>
-#include <sys/wait.h>
-#include <unistd.h> 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <signal.h>
-#include <iostream>
-#include <unistd.h>
 //*********************************************************************************************
 // function name: ExeCmd
 // Description: interperts and executes built-in commands
@@ -19,7 +10,7 @@
 //*********************************************************************************************
 int ExeCmd(void* jobs, char* lineSize, char* cmdString)
 {
-	char* cmd; 
+	char* cmd;
 	char* args[MAX_ARG];
 	char pwd[MAX_LINE_SIZE];
 	char* delimiters = " \t\n";  
@@ -33,7 +24,7 @@ int ExeCmd(void* jobs, char* lineSize, char* cmdString)
 	{
 		args[i] = strtok(NULL, delimiters); 
 		if (args[i] != NULL) 
-			num_arg++; 
+			num_arg++;
  
 	}
 /**************************************************************************************************/
@@ -52,18 +43,18 @@ int ExeCmd(void* jobs, char* lineSize, char* cmdString)
 		else{
 			char old_cwd[MAX_PATH_SIZE];
 			if(getcwd(old_cwd, sizeof(old_cwd)) == NULL)
-				perror("smash error: getcwd failed");
+				PERROR_MSG(getcwd);
 
 			// - case
 			if(!strcmp(args[1], "-")){
 				
 				if(chdir("..")!=0)
-					perror("smash error: chdir failed");
+					PERROR_MSG(chdir);
 
 				else{
 					char new_cwd[MAX_PATH_SIZE];
 					if(getcwd(new_cwd, sizeof(new_cwd)) == NULL)
-						perror("smash error: getcwd failed");
+						PERROR_MSG(getcwd);
 						
 					//root case
 					if(!strcmp(old_cwd, new_cwd))
@@ -75,7 +66,7 @@ int ExeCmd(void* jobs, char* lineSize, char* cmdString)
 			// relative or full path
 			else{
 				if(chdir(args[1])!=0)
-					perror("smash error: chdir failed");
+					PERROR_MSG(chdir);
 			}
 		}
 	}
@@ -88,11 +79,11 @@ int ExeCmd(void* jobs, char* lineSize, char* cmdString)
 			std::cerr << cwd << std::endl;
 		}
 		else
-			perror("smash error: getcwd failed");
+			PERROR_MSG(getcwd);
 	}
 	
 	/**************************************************************************************************/
-	else if (!strcmp(cmd, "diff"))
+	else if (!strcmp(cmd, "diff")) 
 	{
  		if(num_arg != 2)
 			std::cerr << "smash error: diff: invalid arguments" << std::endl;
@@ -111,7 +102,7 @@ int ExeCmd(void* jobs, char* lineSize, char* cmdString)
 	/**************************************************************************************************/
 	else if (!strcmp(cmd, "showpid")) 
 	{
-		
+		std::cerr << "smash pid is " << getpid() << std::endl;
 	}
 	/**************************************************************************************************/
 	else if (!strcmp(cmd, "fg")) 
@@ -159,27 +150,20 @@ void ExeExternal(char *args[MAX_ARG], char* cmdString)
     	switch(pID = fork()) 
 	{
     		case -1: 
-					// Add your code here (error)
+				//error
+				PERROR_MSG(fork);
+
+        	case 0:
+                // Child Process - execute an external command
+               	setpgrp();
+				execvp(cmdString, args);
+				PERROR_MSG(execvp);
+				exit(1);
+			default:
+                // father process - smash
+				wait(NULL);
+				return;
 					
-					/* 
-					your code
-					*/
-        	case 0 :
-                	// Child Process
-               		setpgrp();
-					
-			        // Add your code here (execute an external command)
-					
-					/* 
-					your code
-					*/
-			
-			//default:
-                	// Add your code here
-					
-					/* 
-					your code
-					*/
 	}
 }
 

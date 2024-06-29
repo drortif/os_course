@@ -6,4 +6,5 @@ else
         if root
             smash error: cd: OLDPWD not set 
     else
+
     
