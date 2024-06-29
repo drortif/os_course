@@ -1,0 +1,10 @@
+/////////////////////////////////////cd:
+if too much args
+    smash error: cd: too many arguments
+else
+    if -
+        if root
+            smash error: cd: OLDPWD not set 
+    else
+
+    
