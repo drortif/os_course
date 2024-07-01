@@ -4,6 +4,7 @@ main file. This file contains the main function of smash
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h> 
+#include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
