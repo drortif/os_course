@@ -15,7 +15,7 @@ main file. This file contains the main function of smash
 #define MAXARGS 20
 #define MAX_PATH_SIZE 80
 char* L_Fg_Cmd;
-void* jobs = NULL; //This represents the list of jobs. Please change to a preferred type (e.g array of char*)
+jobs_manager JobsManager; //our implamentation //This represents the list of jobs. Please change to a preferred type (e.g array of char*)
 char lineSize[MAX_LINE_SIZE]; 
 //**************************************************************************************
 // function name: main
@@ -54,9 +54,9 @@ int main(int argc, char *argv[])
 		strcpy(cmdString, lineSize);    	
 		cmdString[strlen(lineSize)-1]='\0';
 					// background commands	
-	 	if(!BgCmd(lineSize, jobs)) continue; 
+	 	if(!BgCmd(lineSize, JobsManager)) continue; 
 					// built in commands
-		ExeCmd(jobs, lineSize, cmdString);
+		ExeCmd(JobsManager, lineSize, cmdString);
 		
 		/* initialize for next line read*/
 		lineSize[0]='\0';

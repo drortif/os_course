@@ -1,3 +1,8 @@
+Q: behavior of system call fail?
+Q: csingnal library use?
+Q: sigstop error?
+Q: time() error
+
 built ins
     pwd
         errors
@@ -9,6 +14,7 @@ built ins
     cd
         errors
             done
+            do 
             do? fewer args
         tests
             printed all errors
@@ -22,6 +28,6 @@ built ins
         
 
 
-external commands
+jobs_manger
     
     

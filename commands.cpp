@@ -8,7 +8,7 @@
 // Parameters: pointer to jobs, command string
 // Returns: 0 - success,1 - failure
 //*********************************************************************************************
-int ExeCmd(void* jobs, char* lineSize, char* cmdString)
+int ExeCmd(jobs_manager& JobsManager, char* lineSize, char* cmdString)
 {
 	char* cmd;
 	char* args[MAX_ARG];
@@ -37,7 +37,7 @@ int ExeCmd(void* jobs, char* lineSize, char* cmdString)
 
 		//args overload case
 		if(num_arg>1)
-			std::cerr << "smash error: cd: too many arguments" << std::endl;
+			cerr << "smash error: cd: too many arguments" << endl;
 		
 		//valid amount of args case
 		else{
@@ -58,7 +58,7 @@ int ExeCmd(void* jobs, char* lineSize, char* cmdString)
 						
 					//root case
 					if(!strcmp(old_cwd, new_cwd))
-						std::cerr << "smash error: cd: OLDPWD not set" << std::endl;
+						cerr << "smash error: cd: OLDPWD not set" << endl;
 
 				}
 			
@@ -76,7 +76,7 @@ int ExeCmd(void* jobs, char* lineSize, char* cmdString)
 	{
 		char cwd[MAX_PATH_SIZE];
 		if(getcwd(cwd, sizeof(cwd)) != NULL){
-			std::cerr << cwd << std::endl;
+			cerr << cwd << endl;
 		}
 		else
 			PERROR_MSG(getcwd);
@@ -86,7 +86,7 @@ int ExeCmd(void* jobs, char* lineSize, char* cmdString)
 	else if (!strcmp(cmd, "diff")) 
 	{
  		if(num_arg != 2)
-			std::cerr << "smash error: diff: invalid arguments" << std::endl;
+			cerr << "smash error: diff: invalid arguments" << endl;
 
 		//compare between the files
 		else{
@@ -97,12 +97,12 @@ int ExeCmd(void* jobs, char* lineSize, char* cmdString)
 	
 	else if (!strcmp(cmd, "jobs")) 
 	{
- 		
+ 		JobsManager.print_jobs_list();
 	}
 	/**************************************************************************************************/
 	else if (!strcmp(cmd, "showpid")) 
 	{
-		std::cerr << "smash pid is " << getpid() << std::endl;
+		cerr << "smash pid is " << getpid() << endl;
 	}
 	/**************************************************************************************************/
 	else if (!strcmp(cmd, "fg")) 
@@ -173,7 +173,7 @@ void ExeExternal(char *args[MAX_ARG], char* cmdString)
 // Parameters: command string, pointer to jobs
 // Returns: 0- BG command -1- if not
 //***************************************************************************************************************************************
-int BgCmd(char* lineSize, void* jobs)
+int BgCmd(char* lineSize, jobs_manager* JobsManager)
 {
 
 	char* Command;

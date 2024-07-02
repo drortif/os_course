@@ -7,8 +7,5 @@
 #include <stdlib.h>
 #include <string.h>
 #include <signal.h>
-
-
-
 #endif
-
+using namespace std;
