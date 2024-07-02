@@ -7,8 +7,12 @@
 #include <stdlib.h>
 #include <string.h>
 #include <signal.h>
+#include <csignal>
 
+extern pid_t child_pid;
 
+void handler_ctrlc(int sig);
+void handler_ctrlz(int sig);
 
 #endif
 

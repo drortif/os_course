@@ -211,7 +211,7 @@ void ExeExternal(char *args[MAX_ARG], char* cmdString)
 				execvp(cmdString, args);
 				PERROR_MSG(execvp);
 				exit(1);
-			default:
+			default: 
                 // father process - smash
 				wait(NULL);
 				return;
