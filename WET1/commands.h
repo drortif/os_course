@@ -11,6 +11,7 @@
 #include <iostream>
 #include "job.h"
 #include "jobs_manager.h"
+#include <fcntl.h> 
 #define MAX_LINE_SIZE 80
 #define MAX_PATH_SIZE 80
 #define MAX_ARG 20

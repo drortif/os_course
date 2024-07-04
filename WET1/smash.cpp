@@ -27,6 +27,7 @@ int main(int argc, char *argv[])
 
 	
 	//signal declaretions
+	//! add syscall error case
 	signal(SIGTSTP, handler_ctrlz);
 	signal(SIGINT, handler_ctrlc);
 	

@@ -22,12 +22,20 @@ built ins
             full path
             -
     
-    diff in progress
+    diff 
         errors
             done
+        do check if works after changing to open
         
+    fg
 
 
 jobs_manger
     
-    
+				if(waitpid(pID, &child_status, 0) == -1)
+					if(WIFSTOPPED(child_status))
+						
+					else
+						PERROR_MSG(waitpid);
+
+				wait(NULL);

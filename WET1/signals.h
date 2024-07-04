@@ -8,6 +8,11 @@
 #include <string.h>
 #include <signal.h>
 #include <csignal>
+#include <iostream>
+#include <csignal>
+#include <cstring>
+#define PERROR_MSG(sys_call) perror("smash error: " #sys_call " failed")
+using namespace std;
 
 extern pid_t child_pid;
 

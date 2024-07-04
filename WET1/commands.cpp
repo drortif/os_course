@@ -210,11 +210,12 @@ int ExeCmd(jobs_manager& JobsManager, char* lineSize, char* cmdString)
 //***************************************************************************************************************************************
 void ExeExternal(char *args[MAX_ARG], char* cmdString)
 {
+	int child_status;
 	int pID;
     	switch(pID = fork()) 
 	{
     		case -1: 
-				//error
+				//fork didnt work
 				PERROR_MSG(fork);
 
         	case 0:
@@ -224,8 +225,27 @@ void ExeExternal(char *args[MAX_ARG], char* cmdString)
 				PERROR_MSG(execvp);
 				exit(1);
 			default:
-                // father process - smash
-				wait(NULL);
+                //father process - smash
+				//child runs in the fg
+
+				//child exited due to an error of the waitpid syscall
+				if(waitpid(pID, &child_status, 0) == -1)
+					PERROR_MSG(waitpid);
+
+				
+				//if ^z was caught
+				if(WTERMSIG(child_status) == SIGTSTP){
+					
+				}
+				//if ^c was caught
+				if(WTERMSIG(child_status) == SIGINT)
+					
+
+				//if something else has interrupted the child process
+				//child exited normally
+				
+
+
 				return;
 					
 	}

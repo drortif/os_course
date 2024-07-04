@@ -6,30 +6,26 @@
 /* Name: handler_ctrlc
    Synopsis: handle the Control-C */
 #include "signals.h"
-#include <iostream>
-#include <csignal>
-#include <unistd.h>
-#include <sys/wait.h>
-#include <sys/types.h>
-#include <cstring>
-
+//! behavior is probably not correct!
 pid_t child_pid = -1;
 
-void handler_ctrlc(int sig){
+void handler_ctrlc(int child_pid){
+   cout << "smash: caught ctrl-C" << endl;
    if(child_pid != -1){
-      std::cout << "smash: caught ctrl-C" << std::endl;
-      std::cout << "\nsmash: process " << child_pid << "was killed" << std::endl;
-      kill(child_pid, SIGKILL);
+      if(kill(child_pid, SIGKILL) == -1)
+         PERROR_MSG(kill);
+      else
+         cout << "\nsmash: process " << child_pid << "was killed" << endl;
       child_pid = -1;
    }
 } 
-void handler_ctrlz(int sig){
+void handler_ctrlz(int child_pid){
+   cout << "smash: caught ctrl-Z" << endl;
    if(child_pid != -1){ 
-      std::cout << "smash: caught ctrl-Z" << std::endl;
-      std::cout << "\nsmash: process " << child_pid << "was stopped" << std::endl;
-      //to check with dror: how to update the job list --------------------------------------------TO DOOOO-----------
-      
-      kill(child_pid, SIGKILL);
+      if(kill(child_pid, SIGSTOP) == -1)
+         PERROR_MSG(kill);
+      else
+         cout << "\nsmash: process " << child_pid << "was stopped" << endl;
       child_pid = -1;
    } 
 }
