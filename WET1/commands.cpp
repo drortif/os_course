@@ -86,12 +86,64 @@ int ExeCmd(jobs_manager& JobsManager, char* lineSize, char* cmdString)
 	else if (!strcmp(cmd, "diff")) 
 	{
  		if(num_arg != 2)
-			cerr << "smash error: diff: invalid arguments" << endl;
-
+			cerr << "smash error: diff: invalid arguments" << std::endl;
 		//compare between the files
 		else{
+			int fd1 = open(args[1], O_RDONLY);
+    		int fd2 = open(args[2], O_RDONLY);
 
-		}
+			if (fd1 < 0 || fd2 < 0) {
+				PERROR_MSG(open);
+				if (fd1 >= 0){
+					if (close(fd1) != 0) {
+						PERROR_MSG(close);
+        				return false;
+    				}
+				}
+				if (fd2 >= 0){
+					if (close(fd2) != 0) {
+						PERROR_MSG(close);
+        				return false;
+    				}
+				}
+
+				return false;
+				}
+			    const int bufferSize = 4096;
+    			char buffer1[bufferSize], buffer2[bufferSize];
+				size_t bytesRead1, bytesRead2;
+
+				bool areFilesIdentical = true;
+				do {
+					bytesRead1 = read(fd1, buffer1, bufferSize);
+       				bytesRead2 = read(fd2, buffer2, bufferSize);
+
+					if (bytesRead1 < 0 || bytesRead2 < 0) {
+           				PERROR_MSG(read);
+            			areFilesIdentical = false;
+            			return false;
+					}
+					if (bytesRead1 != bytesRead2 || memcmp(buffer1, buffer2, bytesRead1) != 0) {
+						areFilesIdentical = false; // Files are different
+            			break;
+					}
+				} while (bytesRead1 > 0 && bytesRead2 > 0);
+
+				if (close(fd1) < 0) {
+					PERROR_MSG(close);
+        			return false;
+				}	
+				if (close(fd2) < 0) {
+					PERROR_MSG(close);
+        			return false;
+				}	
+
+				if (areFilesIdentical && bytesRead1 == 0 && bytesRead2 == 0) {
+        			std::cout << "0" << std::endl; // Files are identical
+    			} else {
+        			std::cout << "1" << std::endl; // Files are different
+    			}
+			}
 	}
 	/**************************************************************************************************/
 	
@@ -107,7 +159,19 @@ int ExeCmd(jobs_manager& JobsManager, char* lineSize, char* cmdString)
 	/**************************************************************************************************/
 	else if (!strcmp(cmd, "fg")) 
 	{
-		
+		switch (num_arg)
+		{
+		case 1:
+			for(vector<job>::iterator entry = JobsManager.jobs_list.begin(); entry != JobsManager.jobs_list.end(); entry++){
+
+			}
+			break;
+		case 0:
+			break;
+		default:
+			cerr << "smash error: fg: invalid arguments" << getpid() << endl;
+			break;
+		}
 	} 
 	/**************************************************************************************************/
 	else if (!strcmp(cmd, "bg")) 

@@ -21,14 +21,14 @@ void handler_ctrlc(int sig){
       std::cout << "\nsmash: process " << child_pid << "was killed" << std::endl;
       kill(child_pid, SIGKILL);
       child_pid = -1;
-   }  
+   }
 } 
 void handler_ctrlz(int sig){
    if(child_pid != -1){ 
       std::cout << "smash: caught ctrl-Z" << std::endl;
       std::cout << "\nsmash: process " << child_pid << "was stopped" << std::endl;
-      //to check with dror
-      jobs.
+      //to check with dror: how to update the job list --------------------------------------------TO DOOOO-----------
+      
       kill(child_pid, SIGKILL);
       child_pid = -1;
    } 

@@ -27,25 +27,9 @@ int main(int argc, char *argv[])
 
 	
 	//signal declaretions
-	//NOTE: the signal handlers and the function/s that sets the handler should be found in siganls.c
-	 /* add your code here */
+	signal(SIGTSTP, handler_ctrlz);
+	signal(SIGINT, handler_ctrlc);
 	
-	/************************************/
-	//NOTE: the signal handlers and the function/s that sets the handler should be found in siganls.c
-	//set your signal handlers here
-	/* add your code here */
-
-	/************************************/
-
-	/************************************/
-	// Init globals 
-
-
-	
-	L_Fg_Cmd =(char*)malloc(sizeof(char)*(MAX_LINE_SIZE+1));
-	if (L_Fg_Cmd == NULL) 
-			exit (-1); 
-	L_Fg_Cmd[0] = '\0';
 	
     	while (1)
     	{
