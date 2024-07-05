@@ -210,6 +210,7 @@ int ExeCmd(jobs_manager& JobsManager, char* lineSize, char* cmdString)
 // Parameters: external command arguments, external command string
 // Returns: void
 //***************************************************************************************************************************************
+//! get read of cmdString, only for illigal commands
 void ExeExternal(char *args[MAX_ARG], char* cmdString, jobs_manager& JobsManager)
 {
 	int child_status;
@@ -223,7 +224,7 @@ void ExeExternal(char *args[MAX_ARG], char* cmdString, jobs_manager& JobsManager
         	case 0:
                 // Child Process - execute an external command
                	setpgrp();
-				execvp(cmdString, args);
+				execvp(args[0], args);
 				PERROR_MSG(execvp);
 				exit(1);
 			default:
@@ -238,7 +239,7 @@ void ExeExternal(char *args[MAX_ARG], char* cmdString, jobs_manager& JobsManager
 				if(WTERMSIG(child_status) == SIGTSTP){
 					JobsManager.update_list();
 					//! time may not be correct
-					JobsManager.add_job_to_list(JobsManager.highest_job_id,cmdString,pID,time(NULL), State::stopped);
+					JobsManager.add_job_to_list(JobsManager.highest_job_id+1,args[0],pID,time(NULL), State::stopped);
 				}
 				//if ^c was caught
 				//if something else has interrupted the child process
