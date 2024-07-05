@@ -1,24 +1,28 @@
-CC = gcc
-CPP = g++
-CFLAGS = -g -Wall
-CPPFLAGS = -g -Wall
-OBJS = smash.o commands.o signals.o
-RM = rm -f
+CXX = g++
+CXXFLAGS = -std=c++11 -Wall -Wextra # -Werror
 
-# Creating the executable
-smash: $(OBJS)
-	$(CPP) -o smash $(OBJS)
+TARGET = smash
+OBJS = smash.o commands.o jobs_manager.o signals.o job.o
 
-# Creating the object files
-commands.o: commands.cpp commands.h
-	$(CPP) $(CPPFLAGS) -c commands.cpp
+all: $(TARGET)
 
-smash.o: smash.cpp commands.h signals.h
-	$(CPP) $(CPPFLAGS) -c smash.cpp
+$(TARGET): $(OBJS)
+	$(CXX) $(CXXFLAGS) -o $(TARGET) $(OBJS)
+
+smash.o: smash.cpp commands.h signals.h jobs_manager.h job.h
+	$(CXX) $(CXXFLAGS) -c smash.cpp
+
+commands.o: commands.cpp commands.h jobs_manager.h job.h
+	$(CXX) $(CXXFLAGS) -c commands.cpp
+
+jobs_manager.o: jobs_manager.cpp jobs_manager.h job.h
+	$(CXX) $(CXXFLAGS) -c jobs_manager.cpp
 
 signals.o: signals.cpp signals.h
-	$(CPP) $(CPPFLAGS) -c signals.cpp
+	$(CXX) $(CXXFLAGS) -c signals.cpp
 
-# Cleaning old files before new make
+job.o: job.cpp job.h
+	$(CXX) $(CXXFLAGS) -c job.cpp
+
 clean:
-	$(RM) smash $(OBJS) *~ "#"* core.*
+	rm -f $(OBJS) $(TARGET)

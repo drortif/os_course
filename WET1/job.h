@@ -9,10 +9,8 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <iostream>
-#include <unistd.h>
 #include <string>
 #include <ctime> //! check if allowed to use
-#endif
 using namespace std;
 
 enum State {
@@ -20,6 +18,7 @@ enum State {
     background = 2,
     stopped = 3
 };
+
 
 class job{
 public:
@@ -32,12 +31,10 @@ public:
     
     //functions
     //constructor
-    job::job(string command, int job_id, int process_id, time_t start_time, State state)
+    job(string command, int job_id, int process_id, time_t start_time, State state)
     : command(command), job_id(job_id), process_id(process_id), start_time(start_time), state(state){};
 
     //distructor
-    job::~job(){};
-
-
-
+    ~job(){};
 };
+#endif // JOB_H

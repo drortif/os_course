@@ -1,7 +1,7 @@
 //		commands.cpp
 //*********************************************************************************************
 #include "commands.h"
-
+bool should_quit = false; //! temp
 //*********************************************************************************************
 // function name: ExeCmd
 // Description: interperts and executes built-in commands
@@ -186,13 +186,15 @@ int ExeCmd(jobs_manager& JobsManager, char* lineSize, char* cmdString)
 	/**************************************************************************************************/
 	else if (!strcmp(cmd, "quit"))
 	{
-   		
+		//!temp
+   		should_quit = true;
+        return 0;
 	} 
 	/**************************************************************************************************/
 	
 	else // external command
 	{
- 		ExeExternal(args, cmdString);
+ 		ExeExternal(args, cmdString, JobsManager);
 	 	return 0;
 	}
 	if (illegal_cmd == true)
@@ -208,7 +210,7 @@ int ExeCmd(jobs_manager& JobsManager, char* lineSize, char* cmdString)
 // Parameters: external command arguments, external command string
 // Returns: void
 //***************************************************************************************************************************************
-void ExeExternal(char *args[MAX_ARG], char* cmdString)
+void ExeExternal(char *args[MAX_ARG], char* cmdString, jobs_manager& JobsManager)
 {
 	int child_status;
 	int pID;
@@ -232,21 +234,16 @@ void ExeExternal(char *args[MAX_ARG], char* cmdString)
 				if(waitpid(pID, &child_status, 0) == -1)
 					PERROR_MSG(waitpid);
 
-				
 				//if ^z was caught
 				if(WTERMSIG(child_status) == SIGTSTP){
-					
+					JobsManager.update_list();
+					//! time may not be correct
+					JobsManager.add_job_to_list(JobsManager.highest_job_id,cmdString,pID,time(NULL), State::stopped);
 				}
 				//if ^c was caught
-				if(WTERMSIG(child_status) == SIGINT)
-					
-
 				//if something else has interrupted the child process
-				//child exited normally
-				
-
-
-				return;
+				//if child exited normally
+				break;
 					
 	}
 }
@@ -257,7 +254,7 @@ void ExeExternal(char *args[MAX_ARG], char* cmdString)
 // Parameters: command string, pointer to jobs
 // Returns: 0- BG command -1- if not
 //***************************************************************************************************************************************
-int BgCmd(char* lineSize, jobs_manager* JobsManager)
+int BgCmd(char* lineSize, jobs_manager& JobsManager)
 {
 
 	char* Command;

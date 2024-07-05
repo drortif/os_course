@@ -42,7 +42,10 @@ int main(int argc, char *argv[])
 	 	if(!BgCmd(lineSize, JobsManager)) continue; 
 					// built in commands
 		ExeCmd(JobsManager, lineSize, cmdString);
-		
+
+		if (should_quit)
+            break;
+
 		/* initialize for next line read*/
 		lineSize[0]='\0';
 		cmdString[0]='\0';
