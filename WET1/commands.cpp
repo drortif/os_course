@@ -32,6 +32,7 @@ int ExeCmd(jobs_manager& JobsManager, char* lineSize, char* cmdString)
 // ARE IN THIS CHAIN OF IF COMMANDS. PLEASE ADD
 // MORE IF STATEMENTS AS REQUIRED
 /**************************************************************************************************/
+//! empty cd sigfault
 	if (!strcmp(cmd, "cd") ) 
 	{
 
@@ -230,13 +231,13 @@ void ExeExternal(char *args[MAX_ARG], char* cmdString, jobs_manager& JobsManager
 			default:
                 //father process - smash
 				//child runs in the fg
-
+				child_pid_in_fg = pID;
 				//child exited due to an error of the waitpid syscall
-				if(waitpid(pID, &child_status, 0) == -1)
+				if(waitpid(child_pid_in_fg, &child_status, WUNTRACED) == -1)
 					PERROR_MSG(waitpid);
 
 				//if ^z was caught
-				if(WTERMSIG(child_status) == SIGTSTP){
+				if(WTERMSIG(child_status) == SIGSTOP){
 					JobsManager.update_list();
 					//! time may not be correct
 					JobsManager.add_job_to_list(JobsManager.highest_job_id+1,args[0],pID,time(NULL), State::stopped);
@@ -265,7 +266,7 @@ int BgCmd(char* lineSize, jobs_manager& JobsManager)
 	{
 		lineSize[strlen(lineSize)-2] = '\0';
 		// Add your code here (execute a in the background)
-					
+		
 		/* 
 		your code
 		*/

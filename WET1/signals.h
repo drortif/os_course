@@ -14,7 +14,7 @@
 #define PERROR_MSG(sys_call) perror("smash error: " #sys_call " failed")
 using namespace std;
 
-extern pid_t child_pid;
+extern int child_pid_in_fg;
 
 void handler_ctrlc(int sig);
 void handler_ctrlz(int sig);
