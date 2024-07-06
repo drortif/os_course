@@ -17,7 +17,7 @@ void handler_ctrlc(int signal){
       else
          cout << "\nsmash: process " << child_pid_in_fg << " was killed" << endl;
       child_pid_in_fg = -1;
-   }
+   }  
 }
 
 void handler_ctrlz(int signal){
@@ -28,5 +28,5 @@ void handler_ctrlz(int signal){
       else
          cout << "\nsmash: process " << child_pid_in_fg << " was stopped" << endl;
       child_pid_in_fg = -1;
-   } 
+   }
 }

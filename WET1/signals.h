@@ -15,7 +15,6 @@
 using namespace std;
 
 extern int child_pid_in_fg;
-
 void handler_ctrlc(int sig);
 void handler_ctrlz(int sig);
 

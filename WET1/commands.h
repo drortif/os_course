@@ -21,7 +21,7 @@
 using namespace std;
 extern bool should_quit; //! temp
 extern int child_pid_in_fg;
-int BgCmd(char* lineSize, jobs_manager& JobsManager);
+int BgCmd(char* lineSize, jobs_manager& JobsManager, char* cmdString);
 int ExeCmd(jobs_manager& JobsManager, char* lineSize, char* cmdString);
 void ExeExternal(char *args[MAX_ARG], char* cmdString, jobs_manager& JobsManager);
 #endif

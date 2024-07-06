@@ -188,9 +188,58 @@ int ExeCmd(jobs_manager& JobsManager, char* lineSize, char* cmdString)
 	else if (!strcmp(cmd, "quit"))
 	{
 		//!temp
-   		should_quit = true;
-        return 0;
-	} 
+		if(args[1] == NULL || strcmp(args[1], "kill")){
+   			should_quit = true;
+    		return 0;
+		}
+		if(!strcmp(args[1], "kill")) {
+			for (auto& job : JobsManager.jobs_list) {
+            	if (job.state == background) {
+					std::cout << "[" << job.job_id << "] " << job.command << " - Sending SIGTERM...";
+                	kill(job.process_id, SIGTERM);
+           		}
+			}
+		}
+		
+		// Wait for 5 seconds
+        std::this_thread::sleep_for(std::chrono::seconds(5));
+
+		bool allTerminated = true;
+        for (auto& job : JobsManager.jobs_list) {
+            if (job.state == background) {
+                int status;
+                pid_t result = waitpid(job.process_id, &status, WNOHANG);
+                if (result == 0) {
+                    allTerminated = false;
+                } else {
+                    job.state = stopped;  // Mark as stopped
+                }
+            }
+        }
+
+        if (allTerminated) {
+            std::cout << "Done." << std::endl;
+        } else {
+            std::cout << "(5 sec passed) Sending SIGKILL...";
+            for (auto& job : JobsManager.jobs_list) {
+                if (job.state == background) {
+                    kill(job.process_id, SIGKILL);
+                }
+            }
+
+            for (auto& job : JobsManager.jobs_list) {
+                if (job.state == background) {
+                    int status;
+                    waitpid(job.process_id, &status, 0);
+                    job.state = stopped;  // Mark as stopped
+                }
+            }
+            std::cout << "Done." << std::endl;
+        }
+		
+		should_quit = true;
+    	return 0;
+	}
 	/**************************************************************************************************/
 	
 	else // external command
@@ -237,10 +286,10 @@ void ExeExternal(char *args[MAX_ARG], char* cmdString, jobs_manager& JobsManager
 					PERROR_MSG(waitpid);
 
 				//if ^z was caught
-				if(WTERMSIG(child_status) == SIGSTOP){
+				if(WSTOPSIG(child_status) == SIGSTOP){
 					JobsManager.update_list();
 					//! time may not be correct
-					JobsManager.add_job_to_list(JobsManager.highest_job_id+1,args[0],pID,time(NULL), State::stopped);
+					JobsManager.add_job_to_list(cmdString,pID,time(NULL), State::stopped);
 				}
 				//if ^c was caught
 				//if something else has interrupted the child process
@@ -256,22 +305,48 @@ void ExeExternal(char *args[MAX_ARG], char* cmdString, jobs_manager& JobsManager
 // Parameters: command string, pointer to jobs
 // Returns: 0- BG command -1- if not
 //***************************************************************************************************************************************
-int BgCmd(char* lineSize, jobs_manager& JobsManager)
+int BgCmd(char* lineSize, jobs_manager& JobsManager, char* cmdString)
 {
 
 	char* Command;
 	char* delimiters = " \t\n";
 	char *args[MAX_ARG];
+	int pID;
 	if (lineSize[strlen(lineSize)-2] == '&')
 	{
+		//removing &
 		lineSize[strlen(lineSize)-2] = '\0';
-		// Add your code here (execute a in the background)
 		
-		/* 
-		your code
-		*/
+		//parsing the command line
+		args[0] = strtok(lineSize, delimiters);
+		for (int i=1; i<MAX_ARG; i++)
+			args[i] = strtok(NULL, delimiters);
 		
+		switch(pID = fork()) 
+		{
+    		case -1: 
+				//fork didnt work
+				PERROR_MSG(fork);
+				break;
+        	case 0:
+                // Child Process - execute an external command
+               	setpgrp();
+				execvp(args[0], args);
+				PERROR_MSG(execvp);
+				exit(1);
+
+			default:
+                //father process - smash
+				//child runs in the bg
+				//insert job to the list directly and carry on
+				JobsManager.update_list();
+				//! time may not be correct
+				JobsManager.add_job_to_list(cmdString, pID, time(NULL), State::background);
+				break;
+					
+		}
+		return 1;
 	}
-	return -1;
+	return 0;
 }
 

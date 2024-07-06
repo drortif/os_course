@@ -32,7 +32,7 @@ public:
     void print_jobs_list();
 
     //external & case or ^Z case
-    void add_job_to_list(int job_id, string command, int process_id, time_t seconds_elapsed, State state);
+    void add_job_to_list(string command, int process_id, time_t seconds_elapsed, State state);
     
     //handles jobs in the list (any status change) - called before:
     //1. running a new command
@@ -44,5 +44,5 @@ public:
     void set_highest_job_id();
 
     //called in update_list
-    void remove_job_from_list(int job_id);
+    vector<job>::iterator remove_job_from_list(int job_id_to_erase);
 };

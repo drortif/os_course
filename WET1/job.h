@@ -23,16 +23,16 @@ enum State {
 class job{
 public:
     //members
-    string command;
     int job_id;
+    string command;
     int process_id;
     time_t start_time;
     State state;
     
     //functions
     //constructor
-    job(string command, int job_id, int process_id, time_t start_time, State state)
-    : command(command), job_id(job_id), process_id(process_id), start_time(start_time), state(state){};
+    job(int job_id, string command, int process_id, time_t start_time, State state)
+    : job_id(job_id), command(command), process_id(process_id), start_time(start_time), state(state){};
 
     //distructor
     ~job(){};

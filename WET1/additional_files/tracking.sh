@@ -39,3 +39,7 @@ jobs_manger
 						PERROR_MSG(waitpid);
 
 				wait(NULL);
+
+im giving you my project. its not finished yet. please read and learn it.
+reply with "ok."
+read it more, really understand the project and remember all its logic.
