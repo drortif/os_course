@@ -87,3 +87,11 @@ void jobs_manager::set_highest_job_id(){
         this->highest_job_id = this->jobs_list.back().job_id;
 }
 
+bool jobs_manager::is_job_in_list(int job_id_to_find){
+for(vector<job>::iterator entry = this->jobs_list.begin(); entry != this->jobs_list.end(); ++entry){
+        if(entry->job_id == job_id_to_find){
+            return true;
+        }
+    }
+    return false;
+}

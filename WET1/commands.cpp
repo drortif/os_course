@@ -82,12 +82,11 @@ int ExeCmd(jobs_manager& JobsManager, char* lineSize, char* cmdString)
 		else
 			PERROR_MSG(getcwd);
 	}
-	
 	/**************************************************************************************************/
 	else if (!strcmp(cmd, "diff")) 
 	{
  		if(num_arg != 2)
-			cerr << "smash error: diff: invalid arguments" << std::endl;
+			cerr << "smash error: diff: invalid arguments" << endl;
 		//compare between the files
 		else{
 			int fd1 = open(args[1], O_RDONLY);
@@ -140,14 +139,13 @@ int ExeCmd(jobs_manager& JobsManager, char* lineSize, char* cmdString)
 				}	
 
 				if (areFilesIdentical && bytesRead1 == 0 && bytesRead2 == 0) {
-        			std::cout << "0" << std::endl; // Files are identical
+        			cout << "0" << endl; // Files are identical
     			} else {
-        			std::cout << "1" << std::endl; // Files are different
+        			cout << "1" << endl; // Files are different
     			}
 			}
 	}
 	/**************************************************************************************************/
-	
 	else if (!strcmp(cmd, "jobs")) 
 	{
  		JobsManager.print_jobs_list();
@@ -160,17 +158,80 @@ int ExeCmd(jobs_manager& JobsManager, char* lineSize, char* cmdString)
 	/**************************************************************************************************/
 	else if (!strcmp(cmd, "fg")) 
 	{
+		int job_id;
+		int pID;
+		int child_status;
+		string cmd;
 		switch (num_arg)
 		{
+		//given job id
 		case 1:
-			for(vector<job>::iterator entry = JobsManager.jobs_list.begin(); entry != JobsManager.jobs_list.end(); entry++){
+			job_id = atoi(args[1]);
+			//fg to the specific job
+			if(JobsManager.is_job_in_list(job_id)){
+				
+				for(vector<job>::iterator entry = JobsManager.jobs_list.begin(); entry != JobsManager.jobs_list.end(); ++entry){
+					if(entry->job_id == job_id){
+						cmd = entry->command;
+						cout<< cmd << " : " << job_id <<endl;
+						pID = entry->process_id;
+					}
+				}
+				if (kill(pID, SIGCONT) < 0)
+        			PERROR_MSG(kill);
+				
+				//removes job from the list
+				JobsManager.remove_job_from_list(job_id);
 
+				if (waitpid(pID, &child_status, WUNTRACED) == -1)
+        			PERROR_MSG(waitpid);
+				
+				//if ^z was caught
+				if(WSTOPSIG(child_status) == SIGSTOP){
+					JobsManager.update_list();
+					//! time may not be correct
+					JobsManager.add_job_to_list(cmd,pID,time(NULL), State::stopped);
+				}
 			}
+			//no job with that job id
+			else
+				cerr << "smash error: fg: job-id " << job_id << " does not exist" << endl;
 			break;
+
+		//no args
 		case 0:
+
+			//fg to the last job in the list
+			if(!JobsManager.jobs_list.empty()){
+
+				pID = JobsManager.jobs_list.back().process_id;
+				cmd = JobsManager.jobs_list.back().command;
+				job_id = JobsManager.jobs_list.back().job_id;
+				if (kill(pID, SIGCONT) < 0)
+        			PERROR_MSG(kill);
+				
+				//removes job from the list
+				JobsManager.remove_job_from_list(job_id);
+
+				if (waitpid(pID, &child_status, WUNTRACED) == -1)
+        			PERROR_MSG(waitpid);
+				
+				//if ^z was caught
+				if(WSTOPSIG(child_status) == SIGSTOP){
+					JobsManager.update_list();
+					//! time may not be correct
+					JobsManager.add_job_to_list(cmd,pID,time(NULL), State::stopped);
+				}
+			}
+
+			//no jobs in the list
+			else
+				cerr << "smash error: fg: jobs list is empty" << endl;
 			break;
+
+		//too many args
 		default:
-			cerr << "smash error: fg: invalid arguments" << getpid() << endl;
+			cerr << "smash error: fg: invalid arguments" << endl;
 			break;
 		}
 	} 
@@ -182,8 +243,48 @@ int ExeCmd(jobs_manager& JobsManager, char* lineSize, char* cmdString)
 	/**************************************************************************************************/
 	else if (!strcmp(cmd, "kill"))
 	{
-   		
-	} 
+		// Check for valid number of arguments
+        if (num_arg != 2 || args[1][0] != '-') {
+            cerr << "smash error: kill: invalid arguments" << endl;
+            return 1;
+		}
+
+		// Parse signal number
+        int signum = atoi(args[1] + 1);
+        if (signum <= 0) {
+            cerr << "smash error: kill: invalid arguments" << endl;
+            return 1;
+        }
+
+		// Parse job ID
+        int job_id = atoi(args[2]);
+        if (job_id <= 0) {
+            cerr << "smash error: kill: invalid arguments" << endl;
+            return 1;
+        }
+
+		// Find the job with the given job_id
+        job* target_job = nullptr;
+        for (auto& job : JobsManager.jobs_list) {
+            if (job.job_id == job_id) {
+                target_job = &job;
+                break;
+            }
+        }
+        if (!target_job) {
+            cerr << "smash error: kill: job-id " << job_id << " does not exist" << endl;
+            return 1;
+        }
+
+		// Send the signal to the process
+       if (kill(target_job->process_id, signum) == -1) {
+            perror("kill");
+            return 1;
+        }
+        
+        cout << "signal number " << signum << " was sent to pid " << target_job->process_id << endl;
+		return 0;
+	}
 	/**************************************************************************************************/
 	else if (!strcmp(cmd, "quit"))
 	{
@@ -195,14 +296,14 @@ int ExeCmd(jobs_manager& JobsManager, char* lineSize, char* cmdString)
 		if(!strcmp(args[1], "kill")) {
 			for (auto& job : JobsManager.jobs_list) {
             	if (job.state == background) {
-					std::cout << "[" << job.job_id << "] " << job.command << " - Sending SIGTERM...";
+					cout << "[" << job.job_id << "] " << job.command << " - Sending SIGTERM...";
                 	kill(job.process_id, SIGTERM);
            		}
 			}
 		}
 		
 		// Wait for 5 seconds
-        std::this_thread::sleep_for(std::chrono::seconds(5));
+        this_thread::sleep_for(chrono::seconds(5));
 
 		bool allTerminated = true;
         for (auto& job : JobsManager.jobs_list) {
@@ -218,9 +319,9 @@ int ExeCmd(jobs_manager& JobsManager, char* lineSize, char* cmdString)
         }
 
         if (allTerminated) {
-            std::cout << "Done." << std::endl;
+            cout << "Done." << endl;
         } else {
-            std::cout << "(5 sec passed) Sending SIGKILL...";
+            cout << "(5 sec passed) Sending SIGKILL...";
             for (auto& job : JobsManager.jobs_list) {
                 if (job.state == background) {
                     kill(job.process_id, SIGKILL);
@@ -234,19 +335,19 @@ int ExeCmd(jobs_manager& JobsManager, char* lineSize, char* cmdString)
                     job.state = stopped;  // Mark as stopped
                 }
             }
-            std::cout << "Done." << std::endl;
+            cout << "Done." << endl;
         }
 		
 		should_quit = true;
     	return 0;
 	}
 	/**************************************************************************************************/
-	
 	else // external command
 	{
  		ExeExternal(args, cmdString, JobsManager);
 	 	return 0;
 	}
+	/**************************************************************************************************/
 	if (illegal_cmd == true)
 	{
 		printf("smash error: > \"%s\"\n", cmdString);
@@ -265,8 +366,7 @@ void ExeExternal(char *args[MAX_ARG], char* cmdString, jobs_manager& JobsManager
 {
 	int child_status;
 	int pID;
-    	switch(pID = fork()) 
-	{
+    	switch(pID = fork()){
     		case -1: 
 				//fork didnt work
 				PERROR_MSG(fork);

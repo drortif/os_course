@@ -13,6 +13,7 @@
 #include <vector>
 #include "job.h"
 #define PERROR_MSG(sys_call) perror("smash error: " #sys_call " failed")
+#define MAX_ARG 20
 #endif
 using namespace std;
 
@@ -45,4 +46,7 @@ public:
 
     //called in update_list
     vector<job>::iterator remove_job_from_list(int job_id_to_erase);
+    
+    //called in fg
+    bool is_job_in_list(int job_id_to_find);
 };

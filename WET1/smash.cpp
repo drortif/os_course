@@ -35,6 +35,7 @@ int main(int argc, char *argv[])
     	{
 	 	printf("smash > ");
 		fgets(lineSize, MAX_LINE_SIZE, stdin);
+		JobsManager.update_list();
 		strcpy(cmdString, lineSize);    	
 		cmdString[strlen(lineSize)-1]='\0';
 					// background commands	

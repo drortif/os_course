@@ -6,7 +6,7 @@
 /* Name: handler_ctrlc
    Synopsis: handle the Control-C */
 #include "signals.h"
-//! behavior is probably not correct!
+//! on no fg process case, frezzes.
 int child_pid_in_fg = -1;
 
 void handler_ctrlc(int signal){
