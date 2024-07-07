@@ -175,6 +175,7 @@ int ExeCmd(jobs_manager& JobsManager, char* lineSize, char* cmdString)
 						cmd = entry->command;
 						cout<< cmd << " : " << job_id <<endl;
 						pID = entry->process_id;
+						child_pid_in_fg = pID;
 					}
 				}
 				if (kill(pID, SIGCONT) < 0)
@@ -203,8 +204,8 @@ int ExeCmd(jobs_manager& JobsManager, char* lineSize, char* cmdString)
 
 			//fg to the last job in the list
 			if(!JobsManager.jobs_list.empty()){
-
 				pID = JobsManager.jobs_list.back().process_id;
+				child_pid_in_fg = pID;
 				cmd = JobsManager.jobs_list.back().command;
 				job_id = JobsManager.jobs_list.back().job_id;
 				if (kill(pID, SIGCONT) < 0)
@@ -215,7 +216,6 @@ int ExeCmd(jobs_manager& JobsManager, char* lineSize, char* cmdString)
 
 				if (waitpid(pID, &child_status, WUNTRACED) == -1)
         			PERROR_MSG(waitpid);
-				
 				//if ^z was caught
 				if(WSTOPSIG(child_status) == SIGSTOP){
 					JobsManager.update_list();
@@ -238,7 +238,84 @@ int ExeCmd(jobs_manager& JobsManager, char* lineSize, char* cmdString)
 	/**************************************************************************************************/
 	else if (!strcmp(cmd, "bg")) 
 	{
-  		
+  		int job_id;
+		int pID;
+		int child_status;
+		string cmd;
+		job *stopped_job = nullptr;
+		switch (num_arg)
+		{
+
+		//given job id
+		case 1:
+			job_id = atoi(args[1]);
+			//job is in the list
+			if(JobsManager.is_job_in_list(job_id)){
+				
+				for(vector<job>::iterator entry = JobsManager.jobs_list.begin(); entry != JobsManager.jobs_list.end(); ++entry){
+					if(entry->job_id == job_id){
+						//resume stopped job with the given job id
+						if(entry->state == stopped){
+							cmd = entry->command;
+							cout<< cmd << " : " << job_id <<endl;
+							pID = entry->process_id;
+
+							//resume it
+							if (kill(pID, SIGCONT) < 0)
+        						PERROR_MSG(kill);
+							else
+								entry->state = background;
+						}
+
+						//the given job is not in stopped state
+						else{
+							cerr << "smash error: bg: job-id " << job_id << " is already running in the background" << endl;
+						}
+					}
+				}
+			}
+
+			//job is not o the list
+			else{
+				cerr << "smash error: bg: job-id " << job_id << " does not exist" << endl;
+			}
+			break;
+
+		//no args
+		case 0:
+
+			//search for the stopped job with the highest job id
+            for (vector<job>::iterator entry = JobsManager.jobs_list.begin(); entry != JobsManager.jobs_list.end(); ++entry){
+                if(entry->state == stopped){
+                    if (!stopped_job || entry->job_id > stopped_job->job_id) {
+                        stopped_job = &(*entry);
+                    }
+                }
+            }
+			//resume stopped job with the highest job id 
+			if(stopped_job){
+				cmd = stopped_job->command;
+				job_id = stopped_job->job_id;
+				cout<< cmd << " : " << job_id <<endl;
+				pID = stopped_job->process_id;
+			
+				//resume it
+				if (kill(pID, SIGCONT) < 0)
+					PERROR_MSG(kill);
+				else
+					stopped_job->state = background;
+			}
+			//no job in stopped state
+			else{
+				cerr << "smash error: bg: there are no stopped jobs to resume" << endl;
+			}
+			break;
+
+		//too many args
+		default:
+			cerr << "smash error: bg: invalid arguments" << endl;
+			break;
+		}
 	}
 	/**************************************************************************************************/
 	else if (!strcmp(cmd, "kill"))
